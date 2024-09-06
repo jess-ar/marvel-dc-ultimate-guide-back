@@ -12,6 +12,20 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
+from dotenv import load_dotenv
+import requests
+
+API_KEY = 'tu_api_key'
+BASE_URL = f'https://superheroapi.com/api/{API_KEY}'
+
+response = requests.get(f'{BASE_URL}/search/Spider-Man')
+
+if response.status_code == 200:
+    data = response.json()
+    print(data)
+else:
+    print(f'Error: {response.status_code}')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +44,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -131,7 +146,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']  # development
 
 # Directory where all static files will be collected in production
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # production
+#STATIC_ROOT = BASE_DIR / 'staticfiles'  # production
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
