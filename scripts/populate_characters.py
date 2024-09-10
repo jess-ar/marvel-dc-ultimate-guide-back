@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from .models import Character
+from characters.models import Character
 import requests
 
 load_dotenv()

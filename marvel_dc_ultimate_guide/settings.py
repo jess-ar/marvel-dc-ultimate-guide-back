@@ -49,6 +49,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'rest_framework',
     'corsheaders',
     'django.contrib.admin',
