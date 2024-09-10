@@ -12,6 +12,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
+from dotenv import load_dotenv
+import requests
+from datetime import timedelta
+
+
+API_KEY = config('SUPERHERO_API_KEY')
+BASE_URL = f'https://superheroapi.com/api/{API_KEY}'
+
+"""# Busca personajes cuyo nombre contenga 'man'
+response = requests.get(f'{BASE_URL}/search/man')
+
+if response.status_code == 200:
+    data = response.json()
+    print(data)  # Verás los personajes relacionados con 'man'
+else:
+    print(f'Error: {response.status_code}')"""
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,10 +43,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'characters',
     'teams',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -108,6 +129,26 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -131,7 +172,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']  # development
 
 # Directory where all static files will be collected in production
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # production
+#STATIC_ROOT = BASE_DIR / 'staticfiles'  # production
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
