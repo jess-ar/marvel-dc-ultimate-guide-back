@@ -24,6 +24,7 @@ class Character(models.Model):
     group_affiliation = models.TextField(blank=True, null=True)
     relatives = models.TextField(blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
+    universe = models.CharField(max_length=50, choices=[('Marvel', 'Marvel'), ('DC', 'DC')], blank=True, null=True)
 
     def __str__(self):
         return self.name
