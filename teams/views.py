@@ -1,3 +1,25 @@
-from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Team, Character
+from characters.serializers import CharacterSerializer
+from .serializers import TeamSerializer
 
-# Create your views here.
+@api_view(['GET'])
+def get_avengers_characters(request):
+    try:
+        avengers_team = Team.objects.get(name="Avengers")
+        characters = avengers_team.members.all()
+        serializer = CharacterSerializer(characters, many=True)
+        return Response({"characters": serializer.data})
+    except Team.DoesNotExist:
+        return Response({"error": "Avengers team not found"}, status=404)
+
+@api_view(['GET'])
+def get_justice_league_characters(request):
+    try:
+        justice_league_team = Team.objects.get(name='Justice League')
+        characters = Character.objects.filter(team=justice_league_team)
+        serializer = CharacterSerializer(characters, many=True)
+        return Response({'characters': serializer.data})
+    except Team.DoesNotExist:
+        return Response({'error': 'Justice League team not found'}, status=404)
