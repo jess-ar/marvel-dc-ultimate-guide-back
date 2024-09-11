@@ -45,10 +45,16 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework_simplejwt.token_blacklist',
+    'django_extensions',
     'rest_framework',
     'corsheaders',
     'django.contrib.admin',
@@ -71,7 +77,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
+
 
 ROOT_URLCONF = 'marvel_dc_ultimate_guide.urls'
 
@@ -136,13 +146,12 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -179,5 +188,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']  # development
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 CORS_ALLOW_ALL_ORIGINS = True
+
 
