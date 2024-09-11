@@ -10,11 +10,11 @@ from .views import (
 )
 
 urlpatterns = [
-    path('characters/', CharacterListView.as_view(), name='character-list'),
-    path('characters/search/', CharacterSearchView, name='character-search'),
+    path('', CharacterListView.as_view(), name='character-list'),
+    path('search/', CharacterSearchView.as_view(), name='character-search'),  # Corrección aquí
+    path('create/', CharacterCreateView.as_view(), name='character-create'),
+    path('<int:pk>/', CharacterDetailView.as_view(), name='character-detail'),
+    path('<int:pk>/update/', CharacterUpdateView.as_view(), name='character-update'),
+    path('<int:pk>/delete/', CharacterDeleteView.as_view(), name='character-delete'),
     path('get-characters/', get_multiple_characters, name='get_multiple_characters'),
-    path('characters/create/', CharacterCreateView.as_view(), name='character-create'),
-    path('characters/<int:pk>/', CharacterDetailView.as_view(), name='character-detail'),
-    path('characters/<int:pk>/update/', CharacterUpdateView.as_view(), name='character-update'),
-    path('characters/<int:pk>/delete/', CharacterDeleteView.as_view(), name='character-delete'),
 ]

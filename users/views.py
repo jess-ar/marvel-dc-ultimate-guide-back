@@ -7,6 +7,7 @@ from .serializers import UserSerializer
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
 from rest_framework.permissions import BasePermission
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class RegisterView(APIView):
@@ -15,26 +16,32 @@ class RegisterView(APIView):
     def post(self, request):
         try:
             serializer = UserSerializer(data=request.data)
-
             if serializer.is_valid():
                 user = serializer.save()
                 email = request.data.get('email')
                 password = request.data.get('password')
                 user = authenticate(username=email, password=password)
 
-                if user:
+                if user is not None:
                     login(request, user)
                     refresh = RefreshToken.for_user(user)
+                    access_token = str(refresh.access_token)
+                    refresh_token = str(refresh)
+
+                    # Esta es la respuesta que envías al frontend
                     return Response({
-                        'access': str(refresh.access_token),
-                        'refresh': str(refresh),
+                        'access': access_token,
+                        'refresh': refresh_token,
                         'message': 'User registered successfully'
                     }, status=status.HTTP_201_CREATED)
-
-                return Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            # Este es el bloque donde ocurre el error
+            print(f"Unknown error: {str(e)}")
             return Response({'error': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -44,7 +51,9 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        user = authenticate(username=email, password=password)
+
+        # Autenticar directamente por email (si tienes un backend de autenticación configurado para permitir autenticación por email)
+        user = authenticate(request, username=email, password=password)
 
         if user:
             login(request, user)
@@ -116,9 +125,23 @@ class UserMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        return Response({
-            "username": user.username,
-            "email": user.email,
-            "avatar": user.avatar.url if user.avatar else None,
-        })
+        try:
+            # Verifica el token en el request
+            auth_header = request.headers.get('Authorization')
+            if auth_header:
+                token_type, token = auth_header.split(' ')
+                if token_type == 'Bearer':
+                    access_token = AccessToken(token)
+                    print('Token:', access_token)
+            else:
+                print('No Authorization header found')
+
+            user = request.user
+            return Response({
+                "username": user.username,
+                "email": user.email,
+                "avatar": user.avatar.url if user.avatar else None,
+            })
+        except Exception as e:
+            print(f'Error in UserMeView: {str(e)}')
+            return Response({'error': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

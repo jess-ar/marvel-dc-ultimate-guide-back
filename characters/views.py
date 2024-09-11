@@ -2,20 +2,23 @@ from rest_framework import generics
 from .models import Character
 from .serializers import CharacterSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from marvel_dc_ultimate_guide.api import character_search
 from django.http import JsonResponse
+import requests
+from rest_framework.pagination import PageNumberPagination
 
 
-def CharacterSearchView(request):
-    query = request.GET.get('q')
-    if query:
-        result = character_search(query)
-        return JsonResponse(result, safe=False)
-    return JsonResponse({'error': 'No query provided'}, status=400)
+class CharacterSearchView(generics.ListAPIView):
+    serializer_class = CharacterSerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('search', None)
+        if query:
+            return Character.objects.filter(name__icontains=query)
+        return Character.objects.none()
 
 
 def get_multiple_characters(request):
-    character_ids = request.GET.getlist('ids')  # Recibe los IDs de la lista en la URL como parámetros
+    character_ids = request.GET.getlist('ids')
     character_data = []
 
     for character_id in character_ids:
@@ -40,6 +43,7 @@ class CharacterCreateView(generics.CreateAPIView):
 class CharacterListView(generics.ListAPIView):
     queryset = Character.objects.all()
     serializer_class = CharacterSerializer
+    pagination_class = PageNumberPagination
 
 
 # READ 1
@@ -58,3 +62,4 @@ class CharacterUpdateView(generics.UpdateAPIView):
 class CharacterDeleteView(generics.DestroyAPIView):
     queryset = Character.objects.all()
     serializer_class = CharacterSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
