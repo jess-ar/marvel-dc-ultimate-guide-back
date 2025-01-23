@@ -8,12 +8,12 @@ class CharacterAdmin(admin.ModelAdmin):
     list_display = ('name', 'full_name', 'get_universe', 'has_team', 'image_display')
 
     def get_universe(self, obj):
-        return obj.universe  # Asegúrate de que este campo esté en tu modelo Character
+        return obj.universe
 
     get_universe.short_description = 'Universe'
 
     def has_team(self, obj):
-        return obj.teams.exists()  # Verificar si tiene equipo asignado
+        return obj.teams.exists()
 
     has_team.short_description = 'Has Team'
 

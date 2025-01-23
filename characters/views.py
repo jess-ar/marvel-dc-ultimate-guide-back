@@ -17,21 +17,6 @@ class CharacterSearchView(generics.ListAPIView):
         return Character.objects.none()
 
 
-def get_multiple_characters(request):
-    character_ids = request.GET.getlist('ids')
-    character_data = []
-
-    for character_id in character_ids:
-        response = requests.get(f'{BASE_URL}/{character_id}')
-        if response.status_code == 200:
-            data = response.json()
-            if data['response'] == 'success':
-                character_data.append(data)
-        else:
-            print(f"Error fetching character with ID {character_id}: {response.status_code}")
-
-    return JsonResponse(character_data, safe=False)
-
 #CREATE
 class CharacterCreateView(generics.CreateAPIView):
     queryset = Character.objects.all()
