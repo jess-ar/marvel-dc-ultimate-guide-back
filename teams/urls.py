@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import TeamViewSet
-from rest_framework.routers import DefaultRouter
+from .views import get_avengers_characters, get_justice_league_characters
 
-router = DefaultRouter()
-router.register(r'teams', TeamViewSet, basename='team')
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('teams/avengers/', get_avengers_characters, name='get_avengers_characters'),
+    path('justice-league/', get_justice_league_characters, name='get_justice_league_characters'),
+]
