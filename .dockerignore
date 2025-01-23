@@ -1,0 +1,7 @@
+.venv
+.coverage
+.git
+__pycache__
+*.pyc
+*.pyo
+*.log
