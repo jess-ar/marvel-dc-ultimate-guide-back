@@ -5,9 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .serializers import UserSerializer
 from .models import CustomUser
-from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class RegisterView(APIView):
@@ -17,31 +16,38 @@ class RegisterView(APIView):
         try:
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
+                # Crear usuario
                 user = serializer.save()
-                email = request.data.get('email')
+                email = user.email
                 password = request.data.get('password')
+
+                # Autenticar al usuario recién creado
                 user = authenticate(username=email, password=password)
 
-                if user is not None:
+                if user and user.is_active:
                     login(request, user)
+
+                    # Generar tokens
                     refresh = RefreshToken.for_user(user)
                     access_token = str(refresh.access_token)
                     refresh_token = str(refresh)
 
-                    # Esta es la respuesta que envías al frontend
+                    # Respuesta al frontend
                     return Response({
                         'access': access_token,
                         'refresh': refresh_token,
                         'message': 'User registered successfully'
                     }, status=status.HTTP_201_CREATED)
                 else:
-                    return Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Authentication failed. User may be inactive.'},
+                                    status=status.HTTP_400_BAD_REQUEST)
             else:
+                # Errores de validación del serializer
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            # Este es el bloque donde ocurre el error
-            print(f"Unknown error: {str(e)}")
+            # Log para depurar errores inesperados
+            print(f"Unknown error during registration: {str(e)}")
             return Response({'error': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -76,7 +82,7 @@ class UserListView(APIView):
 
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def delete(self, request, username):
         try:
@@ -126,22 +132,24 @@ class UserMeView(APIView):
 
     def get(self, request):
         try:
-            # Verifica el token en el request
+            # Verifica si el token existe en el encabezado
             auth_header = request.headers.get('Authorization')
             if auth_header:
                 token_type, token = auth_header.split(' ')
                 if token_type == 'Bearer':
-                    access_token = AccessToken(token)
-                    print('Token:', access_token)
+                    access_token = AccessToken(token)  # Decodifica el token JWT
+                    print('Token válido:', access_token)
             else:
                 print('No Authorization header found')
 
+            # Devuelve los datos del usuario autenticado
             user = request.user
             return Response({
                 "username": user.username,
                 "email": user.email,
-                "avatar": user.avatar.url if user.avatar else None,
+                "avatar": user.avatar.url if user.avatar and hasattr(user.avatar, 'url') else None,
             })
+
         except Exception as e:
-            print(f'Error in UserMeView: {str(e)}')
-            return Response({'error': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Error en UserMeView: {e}")
+            return Response({'error': 'Internal Server Error'}, status=500)

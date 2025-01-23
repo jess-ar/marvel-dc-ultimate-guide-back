@@ -46,9 +46,9 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
 
 # Application definition
 
@@ -140,6 +140,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -148,8 +151,8 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -188,7 +191,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']  # development
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 CORS_ALLOW_ALL_ORIGINS = True
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
