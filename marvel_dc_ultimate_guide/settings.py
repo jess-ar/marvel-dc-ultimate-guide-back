@@ -191,11 +191,11 @@ STATICFILES_DIRS = [BASE_DIR / 'static']  # development
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://www.marvel-and-dc-ultimate-guide.com",
-    "https://api.marvel-and-dc-ultimate-guide.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:8000",
+ALLOWED_HOSTS = [
+    'api.marvel-and-dc-ultimate-guide.com',
+    'marvel-dc-ultimate-guide-backend.onrender.com',
+    'localhost',
+    '127.0.0.1',
 ]
 
 MEDIA_URL = '/media/'
