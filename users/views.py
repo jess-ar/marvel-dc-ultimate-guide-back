@@ -7,6 +7,8 @@ from .serializers import UserSerializer
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import make_password
 
 
 class RegisterView(APIView):
@@ -132,24 +134,38 @@ class UserMeView(APIView):
 
     def get(self, request):
         try:
-            # Verifica si el token existe en el encabezado
-            auth_header = request.headers.get('Authorization')
-            if auth_header:
-                token_type, token = auth_header.split(' ')
-                if token_type == 'Bearer':
-                    access_token = AccessToken(token)  # Decodifica el token JWT
-                    print('Token válido:', access_token)
-            else:
-                print('No Authorization header found')
+            print("Authorization header:", request.headers.get('Authorization'))
+            print("User:", request.user)
 
-            # Devuelve los datos del usuario autenticado
             user = request.user
-            return Response({
-                "username": user.username,
-                "email": user.email,
-                "avatar": user.avatar.url if user.avatar and hasattr(user.avatar, 'url') else None,
-            })
+            if user.is_authenticated:
+                return Response({
+                    "username": user.username,
+                    "email": user.email,
+                    "avatar": user.avatar.url if user.avatar and hasattr(user.avatar, 'url') else None,
+                })
+            else:
+                return Response({'error': 'User is not authenticated'}, status=401)
 
         except Exception as e:
-            print(f"Error en UserMeView: {e}")
+            print(f"Error in UserMeView: {e}")
             return Response({'error': 'Internal Server Error'}, status=500)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        # Verificar que la contraseña antigua sea correcta
+        if not user.check_password(old_password):
+            return Response({'error': 'Old password is incorrect.'}, status=400)
+
+        # Actualizar la contraseña
+        if new_password:
+            user.password = make_password(new_password)
+            user.save()
+            return Response({'message': 'Password updated successfully.'}, status=200)
+        return Response({'error': 'New password is required.'}, status=400)

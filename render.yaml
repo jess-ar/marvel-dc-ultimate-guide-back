@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: marvel-dc-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn your_project_name.wsgi:application
+    envVars:
+      - key: DB_NAME
+        value: marvel_dc
+      - key: DB_USER
+        value: postgres
+      - key: DB_PASSWORD
+        value: to
+      - key: DB_HOST
+        value: 127.0.0.1
+      - key: DB_PORT
+        value: "5432"
+      - key: SECRET_KEY
+        value: '(!y==6ca-ujqzd*ry!_3!h)s)63=^2%dfdv_!7kks++c'
+      - key: SUPERHERO_API_KEY
+        value: 7beed12553f792ffd568a1f3686
